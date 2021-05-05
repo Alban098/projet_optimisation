@@ -1,7 +1,10 @@
+import java.util.List;
+
 public final class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         DataModel dataModel = new DataModel();
+        BinPacking binPacking = new BinPacking(dataModel);
         System.out.println(BinUtilities.getLowerBound(dataModel));
         long startTime = System.nanoTime();
         try {
@@ -10,7 +13,16 @@ public final class Main {
         catch (Exception ignored) {
 
         }
-//        new FirstFitDecreasing(dataModel);
+        List<Bin> binsListFirstFitDecreasing = binPacking.firstFit(binPacking.getDecreasingArray());
+        System.out.println(binsListFirstFitDecreasing + ", with " + binsListFirstFitDecreasing.size() + " bins");
+
+
+        List<Bin> binsListRandomOneToOne = binPacking.getOneToOneBin(binPacking.getRandomArray());
+        System.out.println(binsListRandomOneToOne + ", with " + binsListRandomOneToOne.size() + " bins");
+
+
+        List<Bin> binsListFirstFitRandom = binPacking.firstFit(binPacking.getRandomArray());
+        System.out.println(binsListFirstFitRandom + ", with " + binsListFirstFitRandom.size() + " bins");
 
         long duration = (System.nanoTime() - startTime) / 1000000;
         System.out.println("Executed in " + duration + " ms");

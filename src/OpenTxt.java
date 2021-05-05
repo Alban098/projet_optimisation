@@ -15,7 +15,7 @@ public class OpenTxt {
         weights = new ArrayList<>();
     }
 
-    public ArrayList<Integer> open() throws IOException {
+    public ArrayList<Integer> open() throws Exception {
         FileDialog dialog = new FileDialog((Frame)null, "Select File to Open");
         dialog.setMode(FileDialog.LOAD);
         dialog.setFile("*.txt");
@@ -49,6 +49,8 @@ public class OpenTxt {
 
         weights.clear();
         while ((line = br.readLine()) != null) {
+            if (Integer.parseInt(line) <= 0)
+                throw new Exception("Weight needs to greater than 0");
             weights.add(Integer.parseInt(line));
         }
         br.close();
