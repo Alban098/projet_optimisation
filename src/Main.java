@@ -1,13 +1,19 @@
-import java.util.Arrays;
-
 public final class Main {
 
     public static void main(String[] args) {
-        Items items = new Items();
-        System.out.println(BinUtilities.getLowerBound(items));
+        DataModel dataModel = new DataModel();
+        System.out.println(BinUtilities.getLowerBound(dataModel));
+        long startTime = System.nanoTime();
+        try {
+            BinPackingMip.main(dataModel);
+        }
+        catch (Exception ignored) {
 
-        new FirstFitDecreasing(items);
+        }
+//        new FirstFitDecreasing(dataModel);
 
+        long duration = (System.nanoTime() - startTime) / 1000000;
+        System.out.println("Executed in " + duration + " ms");
         System.exit(0); // close filedialog
     }
 }

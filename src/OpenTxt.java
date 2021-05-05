@@ -7,12 +7,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class OpenTxt {
-    private ArrayList<Integer> arrayList;
+    private final ArrayList<Integer> weights;
     private String file;
     private String[] feature;
 
     public OpenTxt(){
-        arrayList = new ArrayList<>();
+        weights = new ArrayList<>();
     }
 
     public ArrayList<Integer> open() throws IOException {
@@ -23,7 +23,7 @@ public class OpenTxt {
         this.file = dialog.getFile();
         String directory = dialog.getDirectory();
         if (file == null){
-            if (arrayList.isEmpty()){
+            if (weights.isEmpty()){
                 JInternalFrame frame = new JInternalFrame();
                 JOptionPane.showMessageDialog(frame,
                         "File not found or not specified\nExiting...",
@@ -37,7 +37,7 @@ public class OpenTxt {
                         "File not found or not specified.\nUsing old one.",
                         "Error file not found",
                         JOptionPane.WARNING_MESSAGE);
-                return arrayList;
+                return weights;
             }
         }
 
@@ -47,15 +47,16 @@ public class OpenTxt {
         String line = br.readLine();
         feature = line.split(" ");
 
+        weights.clear();
         while ((line = br.readLine()) != null) {
-            arrayList.add(Integer.parseInt(line));
+            weights.add(Integer.parseInt(line));
         }
         br.close();
-        return arrayList;
+        return weights;
     }
 
-    public ArrayList<Integer> getArrayList() {
-        return arrayList;
+    public ArrayList<Integer> getWeights() {
+        return weights;
     }
 
     public String getFile() {

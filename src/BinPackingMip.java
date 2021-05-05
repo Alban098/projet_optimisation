@@ -4,18 +4,19 @@ import com.google.ortools.linearsolver.MPObjective;
 import com.google.ortools.linearsolver.MPSolver;
 import com.google.ortools.linearsolver.MPVariable;
 
+import javax.xml.crypto.Data;
+
 /** Bin packing problem. */
 public class BinPackingMip {
-    static class DataModel {
-        public final double[] weights = {48, 30, 19, 36, 36, 27, 42, 42, 36, 24, 30};
-        public final int numItems = weights.length;
-        public final int numBins = weights.length;
-        public final int binCapacity = 100;
-    }
+//    static class DataModel {
+//        public final double[] weights = {48, 30, 19, 36, 36, 27, 42, 42, 36, 24, 30};
+//        public final int numItems = weights.length;
+//        public final int numBins = weights.length;
+//        public final int binCapacity = 100;
+//    }
 
-    public static void main(String[] args) throws Exception {
+    static void main(DataModel data) throws Exception {
         Loader.loadNativeLibraries();
-        final DataModel data = new DataModel();
 
         // Create the linear solver with the SCIP backend.
         MPSolver solver = MPSolver.createSolver("SCIP");
@@ -55,7 +56,7 @@ public class BinPackingMip {
             MPConstraint constraint = solver.makeConstraint(0, infinity, "");
             constraint.setCoefficient(y[j], data.binCapacity);
             for (int i = 0; i < data.numItems; ++i) {
-                constraint.setCoefficient(x[i][j], -data.weights[i]);
+                constraint.setCoefficient(x[i][j], -data.weights.get(i));
             }
         }
 
@@ -77,8 +78,8 @@ public class BinPackingMip {
                     double binWeight = 0;
                     for (int i = 0; i < data.numItems; ++i) {
                         if (x[i][j].solutionValue() == 1) {
-                            System.out.println("Item " + i + " - weight: " + data.weights[i]);
-                            binWeight += data.weights[i];
+                            System.out.println("Item " + i + " - weight: " + data.weights.get(i));
+                            binWeight += data.weights.get(i);
                         }
                     }
                     System.out.println("Packed bin weight: " + binWeight);
