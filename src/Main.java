@@ -14,16 +14,19 @@ public final class Main {
 //        catch (Exception ignored) {
 //
 //        }
-        List<Bin> binsListFirstFitDecreasing = binPacking.firstFit(binPacking.getDecreasingArray());
-        System.out.println(binsListFirstFitDecreasing + ", with " + binsListFirstFitDecreasing.size() + " bins");
+        BinsList binsListFirstFitDecreasing = binPacking.getDecreasingArray().firstFit();
+        System.out.println(binsListFirstFitDecreasing + ", with " + binsListFirstFitDecreasing.getSize() + " bins");
 
 
-        List<Bin> binsListRandomOneToOne = binPacking.getOneToOneBin(binPacking.getRandomArray());
-        System.out.println(binsListRandomOneToOne + ", with " + binsListRandomOneToOne.size() + " bins");
+        BinsList binsListRandomOneToOne = binPacking.getRandomArray().oneToOneBin();
+        System.out.println(binsListRandomOneToOne + ", with " + binsListRandomOneToOne.getSize() + " bins");
 
 
-        List<Bin> binsListFirstFitRandom = binPacking.firstFit(binPacking.getRandomArray());
-        System.out.println(binsListFirstFitRandom + ", with " + binsListFirstFitRandom.size() + " bins");
+        BinsList binsListFirstFitRandom = binPacking.getRandomArray().firstFit();
+        System.out.println(binsListFirstFitRandom + ", with " + binsListFirstFitRandom.getSize() + " bins");
+
+        System.out.println(binsListFirstFitRandom.moveWeight(0,1,12));
+        System.out.println(binsListFirstFitRandom);
 
         long duration = (System.nanoTime() - startTime) / 1000000;
         System.out.println("Executed in " + duration + " ms");

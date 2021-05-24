@@ -2,9 +2,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Bin {
-    private int binCapacity;
+    private final int binCapacity;
     private int available;
-    private List<Integer> content;
+    private final List<Integer> content;
 
     public Bin(int size) throws Exception {
         this.binCapacity = size;
@@ -29,6 +29,10 @@ public class Bin {
         return binCapacity;
     }
 
+    public int getAvailable() {
+        return available;
+    }
+
     public List<Integer> getContent() {
         return content;
     }
@@ -49,7 +53,9 @@ public class Bin {
     }
 
     public int removeWeight(int index1) {
-        return content.remove(index1);
+        int weight = content.remove(index1);
+        available += weight;
+        return weight;
     }
 
     public boolean isAvailable(int weight) {
