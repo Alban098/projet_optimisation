@@ -45,10 +45,22 @@ public class BinPacking {
         return binsList;
     }
 
-    public void swapWeight(Bin bin1, int index1, Bin bin2, int index2){
-        int toAdd2 = bin1.removeWeight(index1);
-        bin2.addWeight(toAdd2);
-        int toAdd1 = bin1.removeWeight(index2);
-        bin2.addWeight(toAdd1);
+    public boolean moveWeight(Bin bin1, int index1, Bin bin2){
+        if (bin1.getWeight(index1) <= bin2.getBinCapacity()) {
+            int toMove = bin1.removeWeight(index1);
+            return bin2.addWeight(toMove);
+        }
+        return false;
+    }
+
+    public boolean swapWeight(Bin bin1, int index1, Bin bin2, int index2){
+        if (bin1.getWeight(index1) <= bin2.getBinCapacity() && bin2.getWeight(index2) <= bin1.getBinCapacity()) {
+            int toAdd2 = bin1.removeWeight(index1);
+            bin2.addWeight(toAdd2);
+            int toAdd1 = bin1.removeWeight(index2);
+            bin2.addWeight(toAdd1);
+            return true;
+        }
+        return false;
     }
 }

@@ -33,8 +33,14 @@ public class Bin {
         return content;
     }
 
+    public int getWeight(int index){
+        if (index >= 0 && index < content.size())
+            return content.get(index);
+        return -1;
+    }
+
     public boolean addWeight(int weight) {
-        if (available >= weight) {
+        if (isAvailable(weight)) {
             content.add(weight);
             available -= weight;
             return true;
@@ -42,12 +48,16 @@ public class Bin {
         return false;
     }
 
+    public int removeWeight(int index1) {
+        return content.remove(index1);
+    }
+
+    public boolean isAvailable(int weight) {
+        return (available >= weight);
+    }
+
     @Override
     public String toString() {
         return content.toString();
-    }
-
-    public int removeWeight(int index1) {
-        return content.remove(index1);
     }
 }

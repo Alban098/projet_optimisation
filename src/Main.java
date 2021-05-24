@@ -6,13 +6,14 @@ public final class Main {
         DataModel dataModel = new DataModel();
         BinPacking binPacking = new BinPacking(dataModel);
         System.out.println(BinUtilities.getLowerBound(dataModel));
-        long startTime = System.nanoTime();
-        try {
-            BinPackingMip.main(dataModel);
-        }
-        catch (Exception ignored) {
 
-        }
+        long startTime = System.nanoTime();
+//        try {
+//            BinPackingMip.main(dataModel);
+//        }
+//        catch (Exception ignored) {
+//
+//        }
         List<Bin> binsListFirstFitDecreasing = binPacking.firstFit(binPacking.getDecreasingArray());
         System.out.println(binsListFirstFitDecreasing + ", with " + binsListFirstFitDecreasing.size() + " bins");
 
