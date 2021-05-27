@@ -43,6 +43,14 @@ public class Bin {
         return -1;
     }
 
+    public long sum(){
+        long sum = 0;
+        for (int weight : content){
+            sum += weight;
+        }
+        return sum;
+    }
+
     public boolean addWeight(int weight) {
         if (isAvailable(weight)) {
             content.add(weight);
@@ -65,5 +73,9 @@ public class Bin {
     @Override
     public String toString() {
         return content.toString();
+    }
+
+    public int getSize() {
+        return content.size();
     }
 }
