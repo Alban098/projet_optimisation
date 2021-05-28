@@ -1,4 +1,6 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -55,12 +57,16 @@ public class BinsList {
                 long delta;
                 int bin1, index1, bin2;
                 do {
-                    bin1 = rand.nextInt(binsList.size());
-                    index1 = rand.nextInt(binsList.get(bin1).getSize());
-                    bin2 = rand.nextInt(binsList.size());
+                    bin1 = rand.nextInt(tempBinsList.size());
+                    index1 = rand.nextInt(tempBinsList.get(bin1).getSize());
+                    bin2 = rand.nextInt(tempBinsList.size());
                     delta = deltaMoveWeight(bin1, index1, bin2);
-                } while (delta == Long.MIN_VALUE);
-
+                } while ((delta == Long.MIN_VALUE || bin1 == bin2) && hasNeighboors(tempBinsList));
+                if (!hasNeighboors(tempBinsList)) {
+                    System.out.println("no more neighboors");
+                    return this;
+                }
+//                System.out.println(tempBinsList + " move" + tempBinsList.get(bin1) + ":" + index1 + " to " + tempBinsList.get(bin2) + bin1 + ";" + bin2 + "   " + (tempBinsList.get(bin1).getWeight(index1) <= tempBinsList.get(bin2).getAvailable()));
                 if (delta >= 0) {
                     moveWeight(bin1, index1, bin2);
                     long x_next = calculate(tempBinsList);
@@ -77,7 +83,19 @@ public class BinsList {
         return this;
     }
 
-
+    public boolean hasNeighboors(List<Bin> binsList) {
+        int max_available = 0;
+        int min_weight = Integer.MAX_VALUE;
+        int temp;
+        for (Bin bin : binsList){
+            if (max_available < bin.getAvailable())
+                max_available = bin.getAvailable();
+            temp = Collections.min(bin.getContent());
+            if (min_weight > temp)
+                min_weight = temp;
+        }
+        return min_weight <= max_available;
+    }
 
     public long deltaMoveWeight(int bin1, int index1, int bin2) {
         if (tempBinsList.get(bin1).getWeight(index1) <= tempBinsList.get(bin2).getAvailable()) {
@@ -104,7 +122,10 @@ public class BinsList {
     public boolean moveWeight(int bin1, int index1, int bin2){
         if (tempBinsList.get(bin1).getWeight(index1) <= tempBinsList.get(bin2).getAvailable()) {
             int toMove = tempBinsList.get(bin1).removeWeight(index1);
-            return tempBinsList.get(bin2).addWeight(toMove);
+            boolean bool = tempBinsList.get(bin2).addWeight(toMove);
+            if (tempBinsList.get(bin1).getContent().isEmpty())
+                tempBinsList.remove(bin1);
+            return bool;
         }
         return false;
     }
@@ -127,6 +148,6 @@ public class BinsList {
 
     @Override
     public String toString() {
-        return binsList.toString();
+        return binsList.toString() + " " + calculate(binsList);
     }
 }

@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public final class Main {
@@ -25,8 +26,7 @@ public final class Main {
         BinsList binsListFirstFitRandom = binPacking.getRandomArray().firstFit();
         System.out.println(binsListFirstFitRandom + ", with " + binsListFirstFitRandom.getSize() + " bins");
 
-        System.out.println(binsListFirstFitRandom.moveWeight(0,1,12));
-        System.out.println(binsListFirstFitRandom);
+        System.out.println(binsListFirstFitRandom.simulatedAnnealing(50, 50, 1000, 0.9));
 
         long duration = (System.nanoTime() - startTime) / 1000000;
         System.out.println("Executed in " + duration + " ms");
