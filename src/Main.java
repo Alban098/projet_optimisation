@@ -1,32 +1,33 @@
-import java.util.ArrayList;
-import java.util.List;
-
 public final class Main {
 
     public static void main(String[] args) throws Exception {
         DataModel dataModel = new DataModel();
-        BinPacking binPacking = new BinPacking(dataModel);
-        System.out.println(BinUtilities.getLowerBound(dataModel));
+        BinUtilities binUtilities = new BinUtilities(dataModel);
+        System.out.println(binUtilities.getLowerBound());
 
         long startTime = System.nanoTime();
-//        try {
-//            BinPackingMip.main(dataModel);
-//        }
-//        catch (Exception ignored) {
-//
-//        }
-        BinsList binsListFirstFitDecreasing = binPacking.getDecreasingArray().firstFit();
-        System.out.println(binsListFirstFitDecreasing + ", with " + binsListFirstFitDecreasing.getSize() + " bins");
+        try {
+            BinsList binOptimal = BinPackingMip.getOptimal(dataModel);
+            System.out.println("Optimal: " + binOptimal.sort() + ", with " + binOptimal.getSize() + " bins");
+        }
+        catch (Exception ignored) {
+
+        }
+        BinsList binsListFirstFitDecreasing = binUtilities.firstFit(binUtilities.getDecreasingArray());
+        System.out.println("FirstFitDecreasing: " + binsListFirstFitDecreasing.sort() + ", with " + binsListFirstFitDecreasing.getSize() + " bins");
 
 
-        BinsList binsListRandomOneToOne = binPacking.getRandomArray().oneToOneBin();
-        System.out.println(binsListRandomOneToOne + ", with " + binsListRandomOneToOne.getSize() + " bins");
+        BinsList binsListRandomOneToOne = binUtilities.oneToOneBin(binUtilities.getRandomArray());
+        System.out.println("RandomOneToOne: " + binsListRandomOneToOne.sort() + ", with " + binsListRandomOneToOne.getSize() + " bins");
 
 
-        BinsList binsListFirstFitRandom = binPacking.getRandomArray().firstFit();
-        System.out.println(binsListFirstFitRandom + ", with " + binsListFirstFitRandom.getSize() + " bins");
+        BinsList binsListFirstFitRandom = binUtilities.firstFit(binUtilities.getRandomArray());
+        System.out.println("FirstFitRandom: " + binsListFirstFitRandom.sort() + ", with " + binsListFirstFitRandom.getSize() + " bins");
 
-        System.out.println(binsListFirstFitRandom.simulatedAnnealing(50, 50, 1000, 0.9));
+        System.out.println("FirstFitRandom: " + binUtilities.simulatedAnnealing(binsListFirstFitRandom, 50, 50, 1000, 0.9).sort() + ", with " + binsListFirstFitRandom.getSize() + " bins");
+
+        binsListFirstFitRandom = binUtilities.firstFit(binUtilities.getRandomArray());
+        System.out.println("FirstFitRandom: " + binUtilities.tabuSearch(binsListFirstFitRandom,100, 5).sort() + ", with " + binsListFirstFitRandom.getSize() + " bins");
 
         long duration = (System.nanoTime() - startTime) / 1000000;
         System.out.println("Executed in " + duration + " ms");

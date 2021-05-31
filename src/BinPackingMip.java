@@ -4,8 +4,6 @@ import com.google.ortools.linearsolver.MPObjective;
 import com.google.ortools.linearsolver.MPSolver;
 import com.google.ortools.linearsolver.MPVariable;
 
-import javax.xml.crypto.Data;
-
 /** Bin packing problem. */
 public class BinPackingMip {
 //    static class DataModel {
@@ -15,14 +13,14 @@ public class BinPackingMip {
 //        public final int binCapacity = 100;
 //    }
 
-    static void main(DataModel data) throws Exception {
+    static BinsList getOptimal(DataModel data) throws Exception {
         Loader.loadNativeLibraries();
 
         // Create the linear solver with the SCIP backend.
         MPSolver solver = MPSolver.createSolver("SCIP");
         if (solver == null) {
             System.out.println("Could not create solver SCIP");
-            return;
+            return new BinsList(null, -1);
         }
 
         MPVariable[][] x = new MPVariable[data.numItems][data.numBins];
@@ -68,28 +66,11 @@ public class BinPackingMip {
 
         final MPSolver.ResultStatus resultStatus = solver.solve();
 
-        // Check that the problem has an optimal solution.
-        if (resultStatus == MPSolver.ResultStatus.OPTIMAL) {
-            System.out.println("Number of bins used: " + objective.value());
-            double totalWeight = 0;
-            for (int j = 0; j < data.numBins; ++j) {
-                if (y[j].solutionValue() == 1) {
-                    System.out.println("\nBin " + j + "\n");
-                    double binWeight = 0;
-                    for (int i = 0; i < data.numItems; ++i) {
-                        if (x[i][j].solutionValue() == 1) {
-                            System.out.println("Item " + i + " - weight: " + data.weights.get(i));
-                            binWeight += data.weights.get(i);
-                        }
-                    }
-                    System.out.println("Packed bin weight: " + binWeight);
-                    totalWeight += binWeight;
-                }
-            }
-            System.out.println("\nTotal packed weight: " + totalWeight);
-        } else {
+        if (resultStatus == MPSolver.ResultStatus.OPTIMAL)
+            return new BinsList(x, y, data.weights, data.binCapacity);
+        else
             System.err.println("The problem does not have an optimal solution.");
-        }
+        return new BinsList(null, -1);
     }
     private BinPackingMip() {}
 }

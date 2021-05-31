@@ -1,157 +1,47 @@
-import java.lang.reflect.Array;
+import com.google.ortools.linearsolver.MPVariable;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class BinsList {
     private final int binCapacity;
-    private final List<Integer> weights;
     public List<Bin> binsList;
-    private List<Bin> tempBinsList;
 
-    public BinsList(ArrayList<Integer> weights, int binCapacity) {
-        this.weights = weights;
+    public BinsList(int binCapacity) {
         this.binCapacity = binCapacity;
     }
 
-    public BinsList firstFit() throws Exception {
-        binsList = new ArrayList<>();
-        int j;
-        for (Integer weight : weights) {
-            j = -1;
-            do {
-                j++;
-            } while (j < binsList.size() && !binsList.get(j).addWeight(weight));
-            if (j >= binsList.size()) {
-                binsList.add(new Bin(binCapacity));
-                binsList.get(j).addWeight(weight);
+    public BinsList(BinsList binsList) {
+        this.binCapacity = binsList.binCapacity;
+        this.binsList = new ArrayList<>(binsList.binsList);
+    }
+
+    public BinsList(MPVariable[][] x, MPVariable[] y, List<Integer> weights, int binCapacity) throws Exception {
+        this.binCapacity = binCapacity;
+        this.binsList = new ArrayList<>();
+        for (int j = 0; j < x.length; ++j) {
+            if (y[j].solutionValue() == 1) {
+                Bin bin = new Bin(binCapacity);
+                binsList.add(bin);
+                for (int i = 0; i < y.length; ++i)
+                    if (x[i][j].solutionValue() == 1)
+                        bin.addWeight(weights.get(i));
             }
         }
-        return this;
     }
 
-    public BinsList oneToOneBin() throws Exception {
-        binsList = new ArrayList<>();
-        for (Integer weight : weights) {
-            binsList.add(new Bin(binCapacity, weight));
-        }
-        return this;
+    public BinsList(List<Bin> binsList, int binCapacity) {
+        this.binsList = binsList;
+        this.binCapacity = binCapacity;
     }
 
-    public long calculate(List<Bin> binsList) {
+    public long calculate() {
         long sum = 0;
         for (Bin bin : binsList) {
             long f = bin.sum();
             sum += f * f;
         }
         return sum;
-    }
-
-    public BinsList simulatedAnnealing(int n1, int n2, double t0, double mu){
-        tempBinsList = new ArrayList<>(binsList);
-        long fmax = calculate(tempBinsList);
-        Random rand = new Random();
-        for (int k = 0; k < n1; k++){
-            for (int i = 0; i < n2; i++){
-                long delta;
-                int index1, index2;
-                Bin bin1, bin2;
-                do {
-                    bin1 = tempBinsList.get(rand.nextInt(tempBinsList.size()));
-                    index1 = rand.nextInt(bin1.getSize());
-                    bin2 = tempBinsList.get(rand.nextInt(tempBinsList.size()));
-                    index2 = rand.nextInt(bin1.getSize());
-                    delta = deltaMoveWeight(bin1, index1, bin2);
-                } while ((delta == Long.MIN_VALUE || bin1 == bin2) && hasNeighboors(tempBinsList));
-                if (!hasNeighboors(tempBinsList)) {
-                    System.out.println("no more neighboors");
-                    return this;
-                }
-//                System.out.println(tempBinsList + " move" + bin1 + ":" + index1 + " to " + bin2 + bin1 + ";" + bin2 + "   " + (bin1.getWeight(index1) <= bin2.getAvailable()));
-                if (delta >= 0) {
-                    moveWeight(bin1, index1, bin2);
-                    long x_next = calculate(tempBinsList);
-                    if (x_next > fmax) {
-                        binsList = new ArrayList<>(tempBinsList);
-                        fmax = x_next;
-                    }
-                } else if (rand.nextFloat() <= Math.exp(-delta/t0)) {
-                    binsList = new ArrayList<>(tempBinsList);
-                }
-            }
-            t0 *= mu;
-        }
-        return this;
-    }
-
-    public BinsList tabuSearch(int n, int tabooListSize) {
-        tempBinsList = new ArrayList<>(binsList);
-        long fmax = calculate(tempBinsList);
-        long delta;
-        long temp;
-        int b1 = -1, i1 = -1, b2 = -1, i2 = -1;
-        List<Integer[]> tabuList = new ArrayList<>();
-        for (int i = 0; i < n; i++) {
-            delta = Long.MIN_VALUE;
-            for (int bin1 = 0; bin1 < tempBinsList.size(); bin1++){
-                for (int ind1 : tempBinsList.get(bin1).getContent()){
-                    for (int bin2 = bin1 + 1; bin2 < tempBinsList.size(); bin2++){
-                        for (int ind2 : tempBinsList.get(bin2).getContent()){
-                            temp = deltaSwapWeight(tempBinsList.get(bin1), ind1, tempBinsList.get(bin2), ind2);
-                            if (temp >= delta && !tabuList.contains(new Integer[]{bin1, bin2, ind1, ind2})) {
-                                delta = temp;
-                                b1 = bin1;
-                                b2 = bin2;
-                                i1 = ind1;
-                                i2 = ind2;
-                            }
-                            temp = deltaMoveWeight(tempBinsList.get(bin1), ind1, tempBinsList.get(bin2));
-                            if (temp >= delta && !tabuList.contains(new Integer[]{bin1, bin2, ind1, -1})) {
-                                delta = temp;
-                                b1 = bin1;
-                                b2 = bin2;
-                                i1 = ind1;
-                                i2 = -1;
-                            }
-                            temp = deltaMoveWeight(tempBinsList.get(bin2), ind2, tempBinsList.get(bin1));
-                            if (temp >= delta && !tabuList.contains(new Integer[]{bin2, bin1, ind2, -1})) {
-                                delta = temp;
-                                b1 = bin2;
-                                b2 = bin1;
-                                i1 = ind2;
-                                i2 = -1;
-                            }
-                        }
-                    }
-                }
-            }
-            if (i2 == -1)
-                moveWeight(tempBinsList.get(b1), i1, tempBinsList.get(b2));
-            else
-                swapWeight(tempBinsList.get(b1), i1, tempBinsList.get(b2), i2);
-            if (delta >= 0)
-                tabuList.add(new Integer[]{b1, i1, b2, i2});
-            long temp_v = calculate(tempBinsList);
-            if (temp_v > calculate(binsList))
-                binsList = new ArrayList<>(tempBinsList);
-                fmax = temp_v;
-        }
-        return this;
-    }
-
-    public boolean hasNeighboors(List<Bin> binsList) {
-        int max_available = 0;
-        int min_weight = Integer.MAX_VALUE;
-        int temp;
-        for (Bin bin : binsList){
-            if (max_available < bin.getAvailable())
-                max_available = bin.getAvailable();
-            temp = Collections.min(bin.getContent());
-            if (min_weight > temp)
-                min_weight = temp;
-        }
-        return min_weight <= max_available;
     }
 
     public long deltaMoveWeight(Bin bin1, int index1, Bin bin2) {
@@ -181,7 +71,7 @@ public class BinsList {
             int toMove = bin1.removeWeight(index1);
             boolean bool = bin2.addWeight(toMove);
             if (bin1.getContent().isEmpty())
-                tempBinsList.remove(bin1);
+                binsList.remove(bin1);
             return bool;
         }
         return false;
@@ -203,8 +93,25 @@ public class BinsList {
         return binsList.size();
     }
 
+    public Bin getBin(int bin) {
+        return binsList.get(bin);
+    }
+
+    public void setBinsList(BinsList binsList) {
+        this.binsList = new ArrayList<>(binsList.binsList);
+    }
+
+    public BinsList sort() {
+        for (Bin bin : binsList) {
+            bin.sort();
+        }
+
+        binsList.sort(Bin::compareTo);
+        return this;
+    }
+
     @Override
     public String toString() {
-        return binsList.toString() + " " + calculate(binsList);
+        return binsList.toString() + " " + calculate();
     }
 }

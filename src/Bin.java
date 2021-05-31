@@ -1,7 +1,9 @@
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-public class Bin {
+public class Bin implements Comparable<Bin>{
     private final int binCapacity;
     private int available;
     private final List<Integer> content;
@@ -13,8 +15,6 @@ public class Bin {
             throw new Exception("Capcity needs to be greater than 0");
         content = new ArrayList<>();
     }
-
-
 
     public Bin(int capacity, int weight) throws Exception {
         this.binCapacity = capacity;
@@ -70,12 +70,40 @@ public class Bin {
         return (available >= weight);
     }
 
+    public void sort(){
+        content.sort(Collections.reverseOrder());
+    }
+
+    public int getSize() {
+        return content.size();
+    }
+
+
+
     @Override
     public String toString() {
         return content.toString();
     }
 
-    public int getSize() {
-        return content.size();
+    @Override
+    public int compareTo(Bin bin) {
+        long sumThis = sum();
+        long sumBin = bin.sum();
+        if (sumThis > sumBin)
+            return -1;
+        else if (sumThis < sumBin)
+            return 1;
+        else {
+            if (getSize() > bin.getSize())
+                return 1;
+            else if (getSize() < bin.getSize())
+                return -1;
+            else
+                for (int i = 0; i < getSize(); i++) {
+                    if (getWeight(i) != bin.getWeight(i))
+                        return -Integer.compare(getWeight(i), bin.getWeight(i));
+                }
+        }
+        return 0;
     }
 }
