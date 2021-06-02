@@ -107,19 +107,20 @@ public class BinUtilities {
             }
             else
                 tempBinsList.swapWeight(tempBinsList.getBin(b1), i1, tempBinsList.getBin(b2), i2);
-            if (delta >= 0)
+            if (delta <= 0)
                 if (tabuList.size() >= tabuListSize)
                     tabuList.remove(0);
-            if (gotDeleted)
-                tabuList.add("deleted");
-            else if (i2 == -1)
-                tabuList.add(tempBinsList.getBin(b2) + ":" + (tempBinsList.getBin(b2).getSize() - 1) + ">" + tempBinsList.getBin(b1));
-            else
-                tabuList.add(tempBinsList.getBin(b2) + ":" + i2 + "-" + tempBinsList.getBin(b1) + ":" + i1);
+                if (gotDeleted)
+                    tabuList.add("deleted");
+                else if (i2 == -1)
+                    tabuList.add(tempBinsList.getBin(b2) + ":" + (tempBinsList.getBin(b2).getSize() - 1) + ">" + tempBinsList.getBin(b1));
+                else
+                    tabuList.add(tempBinsList.getBin(b2) + ":" + i2 + "-" + tempBinsList.getBin(b1) + ":" + i1);
             long temp_v = tempBinsList.calculate();
-            if (temp_v > fmax)
+            if (temp_v > fmax) {
                 binsList.setBinsList(tempBinsList);
-            fmax = temp_v;
+                fmax = temp_v;
+            }
 //            System.out.println(tabuList + " - " + delta);
         }
         return binsList;
@@ -130,10 +131,10 @@ public class BinUtilities {
         long fmax = tempBinsList.calculate();
         Random rand = new Random();
         boolean isMethodSwap;
+        long delta;
+        int index1, index2;
         for (int k = 0; k < n1; k++){
             for (int i = 0; i < n2; i++){
-                long delta;
-                int index1, index2;
                 Bin bin1, bin2;
                 do {
                     bin1 = tempBinsList.getBin(rand.nextInt(tempBinsList.getSize()));
