@@ -2,8 +2,12 @@ import javax.swing.*;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 
 public class Window extends JFrame {
+    public ButtonEnum[] state;
+    public static Map<ButtonEnum, Button> map;
+
     JLabel currentFile;
     int method;
     Display display;
@@ -14,6 +18,7 @@ public class Window extends JFrame {
     BinsList binsList;
 
     public Window(String str) {
+        state = new ButtonEnum[]{null, null, ButtonEnum.FIRST_FIT};
         this.setSize(1280, 720);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
@@ -72,6 +77,9 @@ public class Window extends JFrame {
     }
 
     public void changeContent(ButtonEnum bEnum) throws Exception {
+        if (state[0] == null && bEnum != ButtonEnum.OPEN) {
+            Main.open();
+        }
         switch (bEnum) {
             case OPEN -> {
                 Main.open();
@@ -80,8 +88,6 @@ public class Window extends JFrame {
                 reload();
             }
             case FIRSTFIT -> {
-                if (Main.dataModel == null)
-                    Main.open();
                 method = 0;
                 BinsList binsList = BinUtilities.firstFit(Main.dataModel);
                 display.setText(binsList.toString());
@@ -89,8 +95,6 @@ public class Window extends JFrame {
                 reload();
             }
             case RECUIT_SIMULE -> {
-                if (Main.dataModel == null)
-                    Main.open();
                 method = 1;
 
                 resetEast();
@@ -113,8 +117,6 @@ public class Window extends JFrame {
                 reload();
             }
             case TABU_SEARCH -> {
-                if (Main.dataModel == null)
-                    Main.open();
                 method = 2;
 
                 resetEast();
@@ -152,9 +154,6 @@ public class Window extends JFrame {
                 binsList = BinUtilities.firstFit(Main.dataModel);
             }
             case OPTIMAL -> {
-                if (Main.dataModel == null)
-                    Main.open();
-
                 if (Main.dataModel.numItems > Main.TOO_BIG) {
                     JInternalFrame frame = new JInternalFrame();
                     String[] options = {"Continue", "Abort"};
