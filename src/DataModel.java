@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DataModel {
@@ -19,5 +21,15 @@ public class DataModel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Integer> getDecreasingArray(){
+        weights.sort(Collections.reverseOrder());
+        return weights;
+    }
+
+    public List<Integer> randomizeArray(){
+        Collections.shuffle(weights);
+        return weights;
     }
 }

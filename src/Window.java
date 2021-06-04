@@ -1,12 +1,17 @@
 import javax.swing.*;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
+import java.util.List;
 
 public class Window extends JFrame {
     JLabel currentFile;
     int method;
-    JTextField dField;
+    Display display;
     private JPanel wrapperEast;
+    List<Integer> weights;
+    Button validate;
+    StringTextField iteration, iter_temp, temp, mu, tabu_size;
+    BinsList binsList;
 
     public Window(String str) {
         this.setSize(1280, 720);
@@ -15,7 +20,7 @@ public class Window extends JFrame {
         this.setLayout(new BorderLayout());
         method = 0;
 
-        Display display = new Display();
+        display = new Display("");
 
         this.getContentPane().add(display, BorderLayout.CENTER, 0);
 
@@ -49,7 +54,7 @@ public class Window extends JFrame {
 
 
         JPanel boxSouth = new JPanel(new GridLayout(0, 2, 5, 5));
-        boxSouth.add(new Button(ButtonEnum.ALEATOIRE));
+        boxSouth.add(new Button(ButtonEnum.FIRST_FIT));
         boxSouth.add(new Button(ButtonEnum.RANDOM));
 
         JPanel wrapperSouth = new JPanel(new GridBagLayout());
@@ -66,30 +71,41 @@ public class Window extends JFrame {
         wrapperEast.setDoubleBuffered(true);
     }
 
-    public void changeContent(ButtonEnum bEnum) {
+    public void changeContent(ButtonEnum bEnum) throws Exception {
         switch (bEnum) {
             case OPEN -> {
                 Main.open();
+                weights = Main.dataModel.weights;
                 resetEast();
+                reload();
             }
             case FIRSTFIT -> {
                 if (Main.dataModel == null)
                     Main.open();
+                method = 0;
+                BinsList binsList = BinUtilities.firstFit(Main.dataModel);
+                display.setText(binsList.toString());
                 resetEast();
+                reload();
             }
             case RECUIT_SIMULE -> {
                 if (Main.dataModel == null)
                     Main.open();
+                method = 1;
+
+                resetEast();
                 JPanel panEast = new JPanel(new GridLayout(6, 1, 5, 5));
 
-                StringTextField iteration = new StringTextField("Itérations : ", 50, Integer.MAX_VALUE, true);
-                panEast.add(iteration.getjPanel());
-                StringTextField iter_temp = new StringTextField("Itération Température : ", 50, Integer.MAX_VALUE, true);
-                panEast.add(iter_temp.getjPanel());
-                StringTextField temp = new StringTextField("Température initiale : ", 10000,Integer.MAX_VALUE, true);
-                panEast.add(temp.getjPanel());
-                StringTextField mu = new StringTextField("Décroissance : ", 0.9, 1, false);
-                panEast.add(mu.getjPanel());
+                iteration = new StringTextField("Itérations : ", 50, Integer.MAX_VALUE, true);
+                panEast.add(iteration.getJPanel());
+                iter_temp = new StringTextField("Itération Température : ", 50, Integer.MAX_VALUE, true);
+                panEast.add(iter_temp.getJPanel());
+                temp = new StringTextField("Température initiale : ", 10000,Integer.MAX_VALUE, true);
+                panEast.add(temp.getJPanel());
+                mu = new StringTextField("Décroissance : ", 0.9, 1, false);
+                panEast.add(mu.getJPanel());
+                validate = new Button(ButtonEnum.VALIDATE);
+                panEast.add(validate);
 
                 wrapperEast.add(panEast);
 
@@ -99,18 +115,56 @@ public class Window extends JFrame {
             case TABU_SEARCH -> {
                 if (Main.dataModel == null)
                     Main.open();
+                method = 2;
 
+                resetEast();
                 JPanel panEast = new JPanel(new GridLayout(6, 1, 5, 5));
 
-                StringTextField iteration = new StringTextField("Itérations : ", 500, Integer.MAX_VALUE, true);
-                panEast.add(iteration.getjPanel());
-                StringTextField tabu_size = new StringTextField("Liste Tabou size : ", 20, Integer.MAX_VALUE,true);
-                panEast.add(tabu_size.getjPanel());
+                iteration = new StringTextField("Itérations : ", 500, Integer.MAX_VALUE, true);
+                panEast.add(iteration.getJPanel());
+                tabu_size = new StringTextField("Liste Tabou size : ", 20, Integer.MAX_VALUE,true);
+                panEast.add(tabu_size.getJPanel());
+                panEast.add(validate);
 
                 wrapperEast.add(panEast);
 
                 this.getContentPane().add(wrapperEast, BorderLayout.EAST, 2);
                 reload();
+            }
+            case VALIDATE -> {
+                switch (method) {
+                    case 1 -> {
+                        binsList.simulatedAnnealing(iteration.getInt(), iter_temp.getInt(), temp.getInt(), mu.getFloat());
+                        display.setText(binsList.toString());
+                    }
+                    case 2 -> {
+                            binsList.tabuSearch(iteration.getInt(), tabu_size.getInt());
+                            display.setText(binsList.toString());
+                    }
+                }
+            }
+            case RANDOM -> {
+                Main.dataModel.randomizeArray();
+                binsList = BinUtilities.oneToOneBin(Main.dataModel);
+            }
+            case FIRST_FIT -> {
+                Main.dataModel.randomizeArray();
+                binsList = BinUtilities.firstFit(Main.dataModel);
+            }
+            case OPTIMAL -> {
+                if (Main.dataModel == null)
+                    Main.open();
+
+                if (Main.dataModel.numItems > Main.TOO_BIG) {
+                    JInternalFrame frame = new JInternalFrame();
+                    String[] options = {"Continue", "Abort"};
+                    int answer = JOptionPane.showOptionDialog(frame, "It can take a lot of time to process the optimal solution\nDo you want to continue ?", "File too big",
+                            JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+                    if (answer == JOptionPane.YES_OPTION)
+                        System.out.println("oui");
+                    else
+                        System.out.println("Aborted");
+                }
             }
         }
     }
@@ -137,12 +191,16 @@ public class Window extends JFrame {
             jPanel.add(jTextField);
         }
 
-        public JPanel getjPanel() {
+        public JPanel getJPanel() {
             return jPanel;
         }
 
-        public JTextField getjTextField() {
-            return jTextField;
+        public int getInt() {
+            return Integer.parseInt(jTextField.getText());
+        }
+
+        public float getFloat() {
+            return Float.parseFloat(jTextField.getText());
         }
     }
 }

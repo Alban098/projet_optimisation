@@ -1,6 +1,7 @@
 import javax.swing.*;
 
 public final class Main {
+    public static final int TOO_BIG = 110; //constante arbitraire dictant si un fichier devient trop gros ou pas.
     public static Window window;
     public static DataModel dataModel;
 
@@ -48,8 +49,7 @@ public final class Main {
     public static void open() {
         dataModel = new DataModel();
 
-        BinUtilities binUtilities = new BinUtilities(dataModel);
-        System.out.println(binUtilities.getLowerBound());
-        System.out.println(binUtilities.getFitnessUpperBound());
+        System.out.println(BinUtilities.getLowerBound(dataModel));
+        System.out.println(BinUtilities.getFitnessUpperBound(dataModel));
     }
 }
