@@ -1,9 +1,18 @@
+import javax.swing.*;
+
 public final class Main {
+    public static Window window;
+    public static DataModel dataModel;
 
     public static void main(String[] args) throws Exception {
-        DataModel dataModel = new DataModel();
-        BinUtilities binUtilities = new BinUtilities(dataModel);
-        System.out.println(binUtilities.getLowerBound());
+//        dataModel = new DataModel();
+//        BinUtilities binUtilities = new BinUtilities(dataModel);
+//        System.out.println(binUtilities.getLowerBound());
+//        System.out.println(binUtilities.getFitnessUpperBound());
+
+        window = new Window("");
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setTitle("Projet Graphe");
 
         long startTime = System.nanoTime();
 //        try {
@@ -13,56 +22,34 @@ public final class Main {
 //        catch (Exception ignored) {
 //
 //        }
-        BinsList binsListFirstFitDecreasing = binUtilities.firstFit(binUtilities.getDecreasingArray());
-        System.out.println("FirstFitDecreasing: " + binsListFirstFitDecreasing.getSize() + " " + binsListFirstFitDecreasing.sort());
+//        BinsList binsListFirstFitDecreasing = binUtilities.firstFit(binUtilities.getDecreasingArray());
+//        System.out.println("FirstFitDecreasing: " + binsListFirstFitDecreasing.getSize() + " " + binsListFirstFitDecreasing.sort());
+//
+//
+//        BinsList binsListRandomOneToOne = binUtilities.oneToOneBin(binUtilities.getRandomArray());
+//        System.out.println("RandomOneToOne: " + binsListRandomOneToOne.getSize() + " " + binsListRandomOneToOne.sort());
+//
+//
+//        BinsList binsListFirstFitRandom = binUtilities.firstFit(binUtilities.getRandomArray());
+//        System.out.println("FirstFitRandom: " + binsListFirstFitRandom.getSize() + " " + binsListFirstFitRandom.sort());
+//
+//        BinsList recuit = binUtilities.simulatedAnnealing(binsListFirstFitRandom, 500, 500, 100000, 0.99);
+//        System.out.println("Recuit Simulé : " + recuit.getSize() + " " + recuit.sort());
+//
+//        binsListFirstFitRandom = binUtilities.firstFit(binUtilities.getRandomArray());
+//        BinsList tabu = binUtilities.tabuSearch(binsListFirstFitRandom,1000, 5);
+//        System.out.println("Tabu Search : " + tabu.getSize() + " " + tabu.sort());
+//
+//        long duration = (System.nanoTime() - startTime) / 1000000;
+//        System.out.println("Executed in " + duration + " ms");
+//        System.exit(0); // close filedialog
+    }
 
+    public static void open() {
+        dataModel = new DataModel();
 
-        BinsList binsListRandomOneToOne = binUtilities.oneToOneBin(binUtilities.getRandomArray());
-        System.out.println("RandomOneToOne: " + binsListRandomOneToOne.getSize() + " " + binsListRandomOneToOne.sort());
-
-
-        BinsList binsListFirstFitRandom = binUtilities.firstFit(binUtilities.getRandomArray());
-        System.out.println("FirstFitRandom: " + binsListFirstFitRandom.getSize() + " " + binsListFirstFitRandom.sort());
-
-        BinsList recuit = binUtilities.simulatedAnnealing(binsListFirstFitRandom, 500, 500, 100000, 0.99);
-        System.out.println("Recuit Simulé : " + recuit.getSize() + " " + recuit.sort());
-
-        binsListFirstFitRandom = binUtilities.firstFit(binUtilities.getRandomArray());
-        BinsList tabu = binUtilities.tabuSearch(binsListFirstFitRandom,1000, 5);
-        System.out.println("Tabu Search : " + tabu.getSize() + " " + tabu.sort());
-
-        long duration = (System.nanoTime() - startTime) / 1000000;
-        System.out.println("Executed in " + duration + " ms");
-        System.exit(0); // close filedialog
+        BinUtilities binUtilities = new BinUtilities(dataModel);
+        System.out.println(binUtilities.getLowerBound());
+        System.out.println(binUtilities.getFitnessUpperBound());
     }
 }
-
-//Loader.loadNativeLibraries();
-//// Create the linear solver with the GLOP backend.
-//MPSolver solver = MPSolver.createSolver("GLOP");
-//
-//// Create the variables x and y.
-//MPVariable x = solver.makeNumVar(0.0, 1.0, "x");
-//MPVariable y = solver.makeNumVar(0.0, 2.0, "y");
-//
-//System.out.println("Number of variables = " + solver.numVariables());
-//
-//// Create a linear constraint, 0 <= x + y <= 2.
-//MPConstraint ct = solver.makeConstraint(0.0, 2.0, "ct");
-//ct.setCoefficient(x, 1);
-//ct.setCoefficient(y, 1);
-//
-//System.out.println("Number of constraints = " + solver.numConstraints());
-//
-//// Create the objective function, 3 * x + y.
-//MPObjective objective = solver.objective();
-//objective.setCoefficient(x, 3);
-//objective.setCoefficient(y, 1);
-//objective.setMaximization();
-//
-//solver.solve();
-//
-//System.out.println("Solution:");
-//System.out.println("Objective value = " + objective.value());
-//System.out.println("x = " + x.solutionValue());
-//System.out.println("y = " + y.solutionValue());

@@ -164,4 +164,8 @@ public class BinUtilities {
         }
         return binsList;
     }
+
+    public long getFitnessUpperBound() {
+        return ((long) dataModel.binCapacity * dataModel.binCapacity * getLowerBound());
+    }
 }
