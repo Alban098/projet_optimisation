@@ -1,38 +1,38 @@
 import javax.swing.*;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 public class Window extends JFrame {
-    public ButtonEnum[] state;
+    public static ButtonEnum gen_sol;
+    public static ButtonEnum method;
     public static Map<ButtonEnum, Button> map;
 
     JLabel currentFile;
-    int method;
+    JPanel panEastSA, panEastTS, wrapperEast;
     Display display;
-    private JPanel wrapperEast;
-    List<Integer> weights;
-    Button validate;
     StringTextField iteration, iter_temp, temp, mu, tabu_size;
     BinsList binsList;
 
     public Window(String str) {
-        state = new ButtonEnum[]{null, null, ButtonEnum.FIRST_FIT};
+        map = new HashMap<>();
+        gen_sol = null;
+        method = null;
         this.setSize(1280, 720);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setLayout(new BorderLayout());
-        method = 0;
 
-        display = new Display("");
+        // Center
+        display = new Display();
+        JScrollPane displayScrollable = new JScrollPane(display);
+        this.getContentPane().add(displayScrollable, BorderLayout.CENTER, 0);
 
-        this.getContentPane().add(display, BorderLayout.CENTER, 0);
-
-
+        //North
         Box boxNorth = Box.createHorizontalBox();
-        boxNorth.add(new Button(ButtonEnum.OPEN));
-        currentFile = new JLabel(" Current File : " + str);
+        boxNorth.add(new Button("Ouvrir...", ButtonEnum.OPEN));
+        currentFile = new JLabel(" Fichier ouvert : ");
         boxNorth.add(currentFile);
 
         JPanel wrapperNorth = new JPanel();
@@ -41,136 +41,175 @@ public class Window extends JFrame {
 
         this.getContentPane().add(wrapperNorth, BorderLayout.NORTH, 1);
 
+        //East
+        wrapperEast = new JPanel(new GridBagLayout());
+        wrapperEast.setDoubleBuffered(true);
 
-        resetEast();
+        panEastSA = new JPanel(new GridLayout(6, 1, 5, 5));
+        iteration = new StringTextField("Itérations : ", 50, Integer.MAX_VALUE, true);
+        iter_temp = new StringTextField("Itération Température : ", 50, Integer.MAX_VALUE, true);
+        temp = new StringTextField("Température initiale : ", 10000,Integer.MAX_VALUE, true);
+        mu = new StringTextField("Décroissance : ", 0.9, 1, false);
+        panEastSA.add(iteration.getJPanel());
+        panEastSA.add(iter_temp.getJPanel());
+        panEastSA.add(temp.getJPanel());
+        panEastSA.add(mu.getJPanel());
+        panEastSA.add(new Button("Valider", ButtonEnum.VALIDATE));
+
+        panEastTS = new JPanel(new GridLayout(6, 1, 5, 5));
+        iteration = new StringTextField("Itérations : ", 500, Integer.MAX_VALUE, true);
+        tabu_size = new StringTextField("Taille liste tabou : ", 20, Integer.MAX_VALUE,true);
+        panEastTS.add(iteration.getJPanel());
+        panEastTS.add(tabu_size.getJPanel());
+        panEastTS.add(new Button("Valider", ButtonEnum.VALIDATE));
 
         this.getContentPane().add(wrapperEast, BorderLayout.EAST, 2);
 
-
-        JPanel boxWest = new JPanel(new GridLayout(3, 1, 5, 5));
-        boxWest.add(new Button(ButtonEnum.FIRSTFIT));
-        boxWest.add(new Button(ButtonEnum.RECUIT_SIMULE));
-        boxWest.add(new Button(ButtonEnum.TABU_SEARCH));
+        // West
+        JPanel boxWest = new JPanel(new GridLayout(4, 1, 5, 5));
+        boxWest.add(new Button("Firstfit décroissant", ButtonEnum.FIRSTFIT));
+        boxWest.add(new Button("Recuit simulé", ButtonEnum.RECUIT_SIMULE));
+        boxWest.add(new Button("Recherche tabou", ButtonEnum.TABU_SEARCH));
+        boxWest.add(new Button("ORtools (Optimal)", ButtonEnum.OPTIMAL));
 
         JPanel wrapperWest = new JPanel(new GridBagLayout());
         wrapperWest.add(boxWest);
 
         this.getContentPane().add(wrapperWest, BorderLayout.WEST, 3);
 
-
-        JPanel boxSouth = new JPanel(new GridLayout(0, 2, 5, 5));
-        boxSouth.add(new Button(ButtonEnum.FIRST_FIT));
-        boxSouth.add(new Button(ButtonEnum.RANDOM));
+        //South
+        JPanel boxSouth = new JPanel(new GridLayout(0, 3, 5, 5));
+        boxSouth.add(new JLabel("Générateur de solution :"));
+        boxSouth.add(new Button("Random firstfit", ButtonEnum.RANDOM_FIRSTFIT));
+        boxSouth.add(new Button("Random one2one", ButtonEnum.RANDOM_ONE2ONE));
 
         JPanel wrapperSouth = new JPanel(new GridBagLayout());
         wrapperSouth.add(boxSouth);
 
         this.getContentPane().add(wrapperSouth, BorderLayout.SOUTH, 4);
-
-
         this.setVisible(true);
     }
 
     private void resetEast() {
-        wrapperEast = new JPanel(new GridBagLayout());
+        wrapperEast.removeAll();
         wrapperEast.setDoubleBuffered(true);
     }
 
     public void changeContent(ButtonEnum bEnum) throws Exception {
-        if (state[0] == null && bEnum != ButtonEnum.OPEN) {
+        display.reloadText("");
+        if (Main.dataModel == null || bEnum == ButtonEnum.OPEN) {
             Main.open();
+            if (Main.dataModel.weights.isEmpty()) {
+                Main.dataModel = null;
+                return;
+            }
+            currentFile.setText(" Fichier ouvert : " + Main.dataModel.file_name);
+            gen_sol = null;
+            method = null;
+            resetEast();
+            this.getContentPane().add(wrapperEast, BorderLayout.EAST, 2);
         }
         switch (bEnum) {
-            case OPEN -> {
-                Main.open();
-                weights = Main.dataModel.weights;
-                resetEast();
-                reload();
-            }
+            //method
             case FIRSTFIT -> {
-                method = 0;
-                BinsList binsList = BinUtilities.firstFit(Main.dataModel);
-                display.setText(binsList.toString());
-                resetEast();
-                reload();
+                method = bEnum;
+                changeContent(ButtonEnum.VALIDATE);
             }
-            case RECUIT_SIMULE -> {
-                method = 1;
+            case RECUIT_SIMULE, TABU_SEARCH -> {
+                method = bEnum;
 
                 resetEast();
-                JPanel panEast = new JPanel(new GridLayout(6, 1, 5, 5));
 
-                iteration = new StringTextField("Itérations : ", 50, Integer.MAX_VALUE, true);
-                panEast.add(iteration.getJPanel());
-                iter_temp = new StringTextField("Itération Température : ", 50, Integer.MAX_VALUE, true);
-                panEast.add(iter_temp.getJPanel());
-                temp = new StringTextField("Température initiale : ", 10000,Integer.MAX_VALUE, true);
-                panEast.add(temp.getJPanel());
-                mu = new StringTextField("Décroissance : ", 0.9, 1, false);
-                panEast.add(mu.getJPanel());
-                validate = new Button(ButtonEnum.VALIDATE);
-                panEast.add(validate);
-
-                wrapperEast.add(panEast);
+                if (bEnum == ButtonEnum.RECUIT_SIMULE)
+                    wrapperEast.add(panEastSA);
+                else
+                    wrapperEast.add(panEastTS);
 
                 this.getContentPane().add(wrapperEast, BorderLayout.EAST, 2);
-                reload();
-            }
-            case TABU_SEARCH -> {
-                method = 2;
-
-                resetEast();
-                JPanel panEast = new JPanel(new GridLayout(6, 1, 5, 5));
-
-                iteration = new StringTextField("Itérations : ", 500, Integer.MAX_VALUE, true);
-                panEast.add(iteration.getJPanel());
-                tabu_size = new StringTextField("Liste Tabou size : ", 20, Integer.MAX_VALUE,true);
-                panEast.add(tabu_size.getJPanel());
-                panEast.add(validate);
-
-                wrapperEast.add(panEast);
-
-                this.getContentPane().add(wrapperEast, BorderLayout.EAST, 2);
-                reload();
-            }
-            case VALIDATE -> {
-                switch (method) {
-                    case 1 -> {
-                        binsList.simulatedAnnealing(iteration.getInt(), iter_temp.getInt(), temp.getInt(), mu.getFloat());
-                        display.setText(binsList.toString());
-                    }
-                    case 2 -> {
-                            binsList.tabuSearch(iteration.getInt(), tabu_size.getInt());
-                            display.setText(binsList.toString());
-                    }
-                }
-            }
-            case RANDOM -> {
-                Main.dataModel.randomizeArray();
-                binsList = BinUtilities.oneToOneBin(Main.dataModel);
-            }
-            case FIRST_FIT -> {
-                Main.dataModel.randomizeArray();
-                binsList = BinUtilities.firstFit(Main.dataModel);
             }
             case OPTIMAL -> {
                 if (Main.dataModel.numItems > Main.TOO_BIG) {
                     JInternalFrame frame = new JInternalFrame();
-                    String[] options = {"Continue", "Abort"};
-                    int answer = JOptionPane.showOptionDialog(frame, "It can take a lot of time to process the optimal solution\nDo you want to continue ?", "File too big",
+                    String[] options = {"Continuer", "Annuler"};
+                    int answer = JOptionPane.showOptionDialog(frame,
+                            "Le fichier spécifié est trop lourd.\n" +
+                                    "La recherche de la solution optimale peut prendre beaucoup de temps", "Fichier trop lourd",
                             JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
-                    if (answer == JOptionPane.YES_OPTION)
-                        System.out.println("oui");
-                    else
-                        System.out.println("Aborted");
+                    if (answer == JOptionPane.NO_OPTION) {
+                        method = null;
+                        return;
+                    }
+                }
+                method = bEnum;
+                gen_sol = null;
+                BinsList binOptimal = BinPackingMip.getOptimal(Main.dataModel);
+                display.reloadText(binOptimal.sort().toString());
+            }
+
+            //gen sol
+            case RANDOM_FIRSTFIT -> {
+                gen_sol = bEnum;
+                Main.dataModel.randomizeArray();
+                binsList = BinUtilities.firstFit(Main.dataModel);
+                if (method != null)
+                    changeContent(ButtonEnum.VALIDATE);
+            }
+            case RANDOM_ONE2ONE -> {
+                gen_sol = bEnum;
+                Main.dataModel.randomizeArray();
+                binsList = BinUtilities.oneToOneBin(Main.dataModel);
+                if (method != null)
+                    changeContent(ButtonEnum.VALIDATE);
+            }
+
+            //validate
+            case VALIDATE -> {
+                if (gen_sol == null && method != ButtonEnum.FIRSTFIT) {
+                    JInternalFrame frame = new JInternalFrame();
+                    JOptionPane.showMessageDialog(frame,
+                            "Il faut choisir un générateur de solution initiale !",
+                            "Pas de solution initiale !",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                switch (method) {
+                    case FIRSTFIT -> {
+                        Main.dataModel.sortArrayDecreasingOrder();
+                        BinsList binsList = BinUtilities.firstFit(Main.dataModel);
+                        display.reloadText(binsList.toString());
+                        resetEast();
+                        this.getContentPane().add(wrapperEast, BorderLayout.EAST, 2);
+                    }
+                    case RECUIT_SIMULE -> {
+                        binsList.simulatedAnnealing(iteration.getInt(), iter_temp.getInt(), temp.getInt(), mu.getFloat());
+                        display.reloadText(binsList.toString());
+                    }
+                    case TABU_SEARCH -> {
+                            binsList.tabuSearch(iteration.getInt(), tabu_size.getInt());
+                            display.reloadText(binsList.toString());
+                    }
                 }
             }
         }
+        reload();
+//        System.out.println(method + " " + gen_sol + "      " + bEnum);
     }
 
     public void reload() {
-        repaint();
+        for (Button button: map.values())
+            button.changeColor();
         revalidate();
+        repaint();
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        super.paint(g);
+        Graphics2D graphics2D = (Graphics2D) g;
+
+        graphics2D.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
     }
 
     private static class StringTextField extends JPanel{

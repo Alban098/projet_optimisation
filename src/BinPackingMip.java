@@ -6,12 +6,6 @@ import com.google.ortools.linearsolver.MPVariable;
 
 /** Bin packing problem. */
 public class BinPackingMip {
-//    static class DataModel {
-//        public final double[] weights = {48, 30, 19, 36, 36, 27, 42, 42, 36, 24, 30};
-//        public final int numItems = weights.length;
-//        public final int numBins = weights.length;
-//        public final int binCapacity = 100;
-//    }
 
     static BinsList getOptimal(DataModel data) throws Exception {
         Loader.loadNativeLibraries();
@@ -41,14 +35,6 @@ public class BinPackingMip {
                 constraint.setCoefficient(x[i][j], 1);
             }
         }
-        // The bin capacity contraint for bin j is
-        //   sum_i w_i x_ij <= C*y_j
-        // To define this constraint, first subtract the left side from the right to get
-        //   0 <= C*y_j - sum_i w_i x_ij
-        //
-        // Note: Since sum_i w_i x_ij is positive (and y_j is 0 or 1), the right side must
-        // be less than or equal to C. But it's not necessary to add this constraint
-        // because it is forced by the other constraints.
 
         for (int j = 0; j < data.numBins; ++j) {
             MPConstraint constraint = solver.makeConstraint(0, infinity, "");

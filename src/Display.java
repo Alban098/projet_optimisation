@@ -24,13 +24,17 @@ import java.awt.*;
 
 public class Display extends JTextPane {
 
-    public Display(String str){
+    public Display(){
         super();
+        this.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 20));
         this.setMargin(new Insets(5,5,5,5));
-        this.setFont(new Font(Font.SANS_SERIF, 3, 20));;
         this.setForeground(Color.white);
-        this.setText(str);
-        this.setCaretPosition(0);
         this.setBackground(new Color(50,50,50));
+        setEditable(false);
+    }
+
+    public void reloadText(String text) {
+        setText(text);
+        setCaretPosition(0);
     }
 }

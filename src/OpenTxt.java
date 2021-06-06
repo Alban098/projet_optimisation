@@ -16,29 +16,19 @@ public class OpenTxt {
     }
 
     public ArrayList<Integer> open() throws Exception {
-        FileDialog dialog = new FileDialog((Frame)null, "Select File to Open");
+        FileDialog dialog = new FileDialog((Frame)null, "Sélectionner le fichier à ouvrir");
         dialog.setMode(FileDialog.LOAD);
         dialog.setFile("*.txt");
         dialog.setVisible(true);
         this.file = dialog.getFile();
         String directory = dialog.getDirectory();
         if (file == null){
-            if (weights.isEmpty()){
-                JInternalFrame frame = new JInternalFrame();
-                JOptionPane.showMessageDialog(frame,
-                        "File not found or not specified\nExiting...",
-                        "Error file not found",
-                        JOptionPane.ERROR_MESSAGE);
-                System.exit(-1);
-            }
-            else {
-                JInternalFrame frame = new JInternalFrame();
-                JOptionPane.showMessageDialog(frame,
-                        "File not found or not specified.\nUsing old one.",
-                        "Error file not found",
-                        JOptionPane.WARNING_MESSAGE);
-                return weights;
-            }
+            JInternalFrame frame = new JInternalFrame();
+            JOptionPane.showMessageDialog(frame,
+                    "Fichier introuvable ou non spécifié",
+                    "Erreur fichier",
+                    JOptionPane.ERROR_MESSAGE);
+            return weights;
         }
 
         File file = new File(directory + this.file);
@@ -54,10 +44,6 @@ public class OpenTxt {
             weights.add(Integer.parseInt(line));
         }
         br.close();
-        return weights;
-    }
-
-    public ArrayList<Integer> getWeights() {
         return weights;
     }
 

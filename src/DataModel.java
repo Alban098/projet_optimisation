@@ -13,23 +13,34 @@ public class DataModel {
         OpenTxt file = new OpenTxt();
         try {
             weights = file.open();
-            String[] strings = file.getFeature();
-            this.binCapacity = Integer.parseInt(strings[0]);
-            this.numItems = Integer.parseInt(strings[1]);
-            this.numBins = this.numItems;
-            this.file_name = file.getFile();
+            if (!weights.isEmpty()) {
+                String[] strings = file.getFeature();
+                this.binCapacity = Integer.parseInt(strings[0]);
+                this.numItems = Integer.parseInt(strings[1]);
+                this.numBins = this.numItems;
+                this.file_name = file.getFile();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public List<Integer> getDecreasingArray(){
+    public void sortArrayDecreasingOrder(){
         weights.sort(Collections.reverseOrder());
-        return weights;
     }
 
-    public List<Integer> randomizeArray(){
+    public void randomizeArray(){
         Collections.shuffle(weights);
-        return weights;
+    }
+
+    @Override
+    public String toString() {
+        return "DataModel{" +
+                "numItems=" + numItems +
+                ", numBins=" + numBins +
+                ", binCapacity=" + binCapacity +
+                ", weights=" + weights +
+                ", file_name='" + file_name + '\'' +
+                '}';
     }
 }

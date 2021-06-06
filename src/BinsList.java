@@ -112,7 +112,6 @@ public class BinsList {
     }
 
 
-
     public BinsList tabuSearch(int n, int tabuListSize) {
         BinsList tempBinsList = new BinsList(this);
         long fmax = tempBinsList.calculate();
@@ -226,6 +225,15 @@ public class BinsList {
 
     @Override
     public String toString() {
-        return binsList.toString() + " " + calculate();
+        StringBuilder str = new StringBuilder(binsList.size() + " bins avec une taille de " + binCapacity
+                + "\net une fitness de " + calculate()
+                + "\n\nBorne inférieure du nombre de bin : " + BinUtilities.getLowerBound(Main.dataModel) + " bins"
+                + "\nBorne suppérieure de fitness : " + BinUtilities.getFitnessUpperBound(Main.dataModel)
+                + "\n\nDétails des bins:\n");
+        sort();
+        for (Bin bin: binsList) {
+            str.append(bin.toString()).append("\n");
+        }
+        return str.toString();
     }
 }
