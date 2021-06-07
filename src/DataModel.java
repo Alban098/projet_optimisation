@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,7 +11,23 @@ public class DataModel {
     public DataModel() {
         OpenTxt file = new OpenTxt();
         try {
-            weights = file.open();
+            weights = file.fileDialogWindow();
+            if (!weights.isEmpty()) {
+                String[] strings = file.getFeature();
+                this.binCapacity = Integer.parseInt(strings[0]);
+                this.numItems = Integer.parseInt(strings[1]);
+                this.numBins = this.numItems;
+                this.file_name = file.getFile();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public DataModel(String file_path){
+        OpenTxt file = new OpenTxt();
+        try {
+            weights = file.openFile(file_path);
             if (!weights.isEmpty()) {
                 String[] strings = file.getFeature();
                 this.binCapacity = Integer.parseInt(strings[0]);

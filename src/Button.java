@@ -1,13 +1,12 @@
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.lang.reflect.Array;
-import java.util.Arrays;
 
 public class Button extends JButton implements MouseListener{
     ButtonEnum bEnum;
-    Color base = new Color(201,218,235);
+    Color base = new Color(218, 226, 236);
     Color hover = new Color(180,196,211);
     Color pressed = new Color(160,174,188);
 

@@ -1,9 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 public class OpenTxt {
@@ -15,7 +12,7 @@ public class OpenTxt {
         weights = new ArrayList<>();
     }
 
-    public ArrayList<Integer> open() throws Exception {
+    public ArrayList<Integer> fileDialogWindow() throws Exception {
         FileDialog dialog = new FileDialog((Frame)null, "Sélectionner le fichier à ouvrir");
         dialog.setMode(FileDialog.LOAD);
         dialog.setFile("*.txt");
@@ -30,8 +27,11 @@ public class OpenTxt {
                     JOptionPane.ERROR_MESSAGE);
             return weights;
         }
+        return openFile(directory + file);
+    }
 
-        File file = new File(directory + this.file);
+    public ArrayList<Integer> openFile(String file_path) throws Exception {
+        File file = new File(file_path);
         //System.out.println(file.exists());
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line = br.readLine();

@@ -12,7 +12,7 @@ public class Window extends JFrame {
     JLabel currentFile;
     JPanel panEastSA, panEastTS, wrapperEast;
     Display display;
-    StringTextField iteration, iter_temp, temp, mu, tabu_size;
+    StringTextField iteration_SA, iteration_TS, iter_temp, temp, mu, tabu_size;
     BinsList binsList;
 
     public Window(String str) {
@@ -46,20 +46,20 @@ public class Window extends JFrame {
         wrapperEast.setDoubleBuffered(true);
 
         panEastSA = new JPanel(new GridLayout(6, 1, 5, 5));
-        iteration = new StringTextField("Itérations : ", 50, Integer.MAX_VALUE, true);
+        iteration_SA = new StringTextField("Itérations : ", 50, Integer.MAX_VALUE, true);
         iter_temp = new StringTextField("Itération Température : ", 50, Integer.MAX_VALUE, true);
         temp = new StringTextField("Température initiale : ", 10000,Integer.MAX_VALUE, true);
         mu = new StringTextField("Décroissance : ", 0.9, 1, false);
-        panEastSA.add(iteration.getJPanel());
+        panEastSA.add(iteration_SA.getJPanel());
         panEastSA.add(iter_temp.getJPanel());
         panEastSA.add(temp.getJPanel());
         panEastSA.add(mu.getJPanel());
         panEastSA.add(new Button("Valider", ButtonEnum.VALIDATE));
 
         panEastTS = new JPanel(new GridLayout(6, 1, 5, 5));
-        iteration = new StringTextField("Itérations : ", 500, Integer.MAX_VALUE, true);
-        tabu_size = new StringTextField("Taille liste tabou : ", 20, Integer.MAX_VALUE,true);
-        panEastTS.add(iteration.getJPanel());
+        iteration_TS = new StringTextField("Itérations : ", 50, Integer.MAX_VALUE, true);
+        tabu_size = new StringTextField("Taille liste tabou : ", 5, Integer.MAX_VALUE,true);
+        panEastTS.add(iteration_TS.getJPanel());
         panEastTS.add(tabu_size.getJPanel());
         panEastTS.add(new Button("Valider", ButtonEnum.VALIDATE));
 
@@ -128,12 +128,14 @@ public class Window extends JFrame {
                 this.getContentPane().add(wrapperEast, BorderLayout.EAST, 2);
             }
             case OPTIMAL -> {
-                if (Main.dataModel.numItems > Main.TOO_BIG) {
+                int size_data = Main.dataModel.numItems;
+                if (size_data > Main.TOO_BIG) {
                     JInternalFrame frame = new JInternalFrame();
                     String[] options = {"Continuer", "Annuler"};
                     int answer = JOptionPane.showOptionDialog(frame,
-                            "Le fichier spécifié est trop lourd.\n" +
-                                    "La recherche de la solution optimale peut prendre beaucoup de temps", "Fichier trop lourd",
+                            "Le fichier spécifié est volumineux.\n" +
+                                    "La recherche de la solution optimale peut être très longue.\n" +
+                                    "(durée estimée : " + (long) (0.0001*size_data*size_data*size_data*size_data/1000/60) + " minutes)", "Fichier volumineux",
                             JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
                     if (answer == JOptionPane.NO_OPTION) {
                         method = null;
@@ -142,7 +144,8 @@ public class Window extends JFrame {
                 }
                 method = bEnum;
                 gen_sol = null;
-                BinsList binOptimal = BinPackingMip.getOptimal(Main.dataModel);
+                Main.dataModel.sortArrayDecreasingOrder();
+                BinsList binOptimal = ORTools.getOptimal(Main.dataModel);
                 display.reloadText(binOptimal.sort().toString());
             }
 
@@ -181,12 +184,12 @@ public class Window extends JFrame {
                         this.getContentPane().add(wrapperEast, BorderLayout.EAST, 2);
                     }
                     case RECUIT_SIMULE -> {
-                        binsList.simulatedAnnealing(iteration.getInt(), iter_temp.getInt(), temp.getInt(), mu.getFloat());
+                        binsList.simulatedAnnealing(iteration_SA.getInt(), iter_temp.getInt(), temp.getInt(), mu.getFloat());
                         display.reloadText(binsList.toString());
                     }
                     case TABU_SEARCH -> {
-                            binsList.tabuSearch(iteration.getInt(), tabu_size.getInt());
-                            display.reloadText(binsList.toString());
+                        binsList.tabuSearch(iteration_TS.getInt(), tabu_size.getInt());
+                        display.reloadText(binsList.toString());
                     }
                 }
             }
